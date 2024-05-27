@@ -1,0 +1,84 @@
+import pathlib
+import numpy as np
+import threading
+import cv2
+import tkinter
+
+window = tkinter.Tk()
+window.title("LOGIN")
+window.geometry('340x440')
+window.configure(bg='#333333')
+
+def login():
+    if human == "Human" and username_entry.get() == "admin" and password_entry.get() == "admin":
+        success_label = tkinter.Label(window, text="Login Successful", bg='#333333', fg= "#FFFFFF")
+        success_label.grid(row=6, column=1, columnspan=2, pady=20)
+        print("asdadd")
+    else:
+        fail_label = tkinter.Label(window, text="Login Failed", bg='#333333', fg= "#FFFFFF")
+        fail_label.grid(row=6, column=1, columnspan=2, pady=20)
+        print("asdsad")
+
+
+human = "Not Human"
+cascade_path = pathlib.Path(cv2.__file__).parent.absolute() / "data/haarcascade_frontalface_default.xml"
+print(cascade_path)
+clf = cv2.CascadeClassifier(str(cascade_path))
+
+# Try opening the default camera (index 0)
+camera = cv2.VideoCapture(0)  # Change index if needed for a different camera
+
+while True:
+    _, frame = camera.read()
+
+    # Check if frame is successfully read
+    if not frame is None:
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = clf.detectMultiScale(
+            gray,
+            scaleFactor=1.1,
+            minNeighbors=5,
+            minSize=(30, 30),
+            flags=cv2.CASCADE_SCALE_IMAGE
+        )
+        for (x, y, width, height) in faces:
+
+            cv2.rectangle(frame, (x, y), (x + width, y + height), (255, 255, 0), 2)
+            if len(faces) > 0:
+                cv2.putText(frame, "Face Detected, press q to exit", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),2)
+                human="Human"
+            else:
+                cv2.putText(frame, "No Face Detected, press q to exit", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),2)
+
+        cv2.imshow("Faces", frame)
+
+    else:
+        print("Error: Failed to read frame from camera!")
+
+    if cv2.waitKey(1) == ord("q"):
+        break
+
+camera.release()
+cv2.destroyAllWindows()
+
+id_entry = tkinter.Label(window, text= human,)
+label = tkinter.Label(window, text= "Login")
+login_label = tkinter.Label(window, text="Login", bg='#333333', fg= "#FFFFFF")
+id_label = tkinter.Label(window, text= "Captcha", bg='#333333', fg= "#FFFFFF")
+username_label = tkinter.Label(window, text="Username", bg='#333333', fg= "#FFFFFF")
+username_entry = tkinter.Entry(window)
+password_entry = tkinter.Entry(window, show = "*")
+password_label = tkinter.Label(window, text= "Password", bg='#333333', fg= "#FFFFFF")
+login_button = tkinter.Button(window, text="Login", bg='#333333',fg= "#FFFFFF", command=lambda: login())
+
+
+login_label.grid(row=0,column=0 , columnspan=2, pady=20)
+username_label.grid(row=1, column=0)
+username_entry.grid(row=1, column=1, pady=10)
+password_label.grid(row=2, column=0)
+password_entry.grid(row=2, column=1, pady=10)
+id_label.grid(row=3, column=0)
+id_entry.grid(row=3, column=1, pady=10)
+login_button.grid(row=5, column=0, columnspan=2, pady=20)
+
+window.mainloop()
